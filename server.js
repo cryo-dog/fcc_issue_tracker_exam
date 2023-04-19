@@ -31,13 +31,21 @@ app.use(cors({origin: '*'})); //For FCC testing purposes only
 // Middleware function for logging requests
 const requestLogger = (req, res, next) => {
   console.log(`Incoming ${req.method} request for ${req.originalUrl}`);
-  console.log(`Request parameters: ${JSON.stringify(req.params)}`);
   next();
 };
 
 // Use the middleware function
 app.use(requestLogger);
 
+// TR: Import new middleware to create a model everytime a request is made
+const issueModel = require('./controllers/modelCreator');
+
+app.use("/api/issues/:project", (req, res, next) => {
+  const project = req.params.project;
+  const model = issueModel(project);
+  req.issueModel = model;
+  next();
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

@@ -3,17 +3,19 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const Issues = require("../controllers/user_schema");
+const IssuesSchema = require("../controllers/user_schema");
+
 
 
 router.route('/issues/:project')
   
   .get(async function (req, res){
     let project = req.params.project;
-    console.log("We are in the get route");
+    const issueModel = req.issueModel;
+
     try {
       //
-      const issues = await Issues.find();
+      const issues = await issueModel.find();
       res.json(issues);
     } catch (err) {
       console.error(err);
@@ -24,9 +26,10 @@ router.route('/issues/:project')
   
   .post(async function (req, res){
     let project = req.params.project;
+    const issueModel = req.issueModel;
     const { assigned_to, created_by, issue_text, issue_title, status_text } = req.body;
 
-    const newIssue = new Issues({
+    const newIssue = new issueModel({
       issue_title: issue_title,
       issue_text: issue_text,
       created_by: created_by
@@ -44,6 +47,7 @@ router.route('/issues/:project')
   .put(async function (req, res){
 
     let project = req.params.project;
+    const issueModel = req.issueModel;
     let { assigned_to, created_by, issue_text, issue_title, status_text, _id, open  } = req.body;
     open != "false" ? open = true : open = false;
 
@@ -54,19 +58,29 @@ router.route('/issues/:project')
     if (issue_text) updateValues.issue_text = issue_text;
     if (issue_title) updateValues.issue_title = issue_title;
     if (status_text) updateValues.status_text = status_text;
+    updateValues.updated_on = new Date();
     updateValues.open = open;
 
     try {
-      const updatedEntry = // please fix
+      const updatedEntry = await issueModel.findOneAndUpdate({ _id: _id }, updateValues, { new: true });
+      console.log(updatedEntry);
     } catch (error) {
       console.error("Error updating", err);
     }
-
   })
   
-  .delete(function (req, res){
+  .delete(async function (req, res){
     let project = req.params.project;
-    
+    const issueModel = req.issueModel;
+    const { _id } = req.body;
+    if (!_id) res.status(400).json({ error: "missing _id" });
+    try {
+      const deletedEntry = await issueModel.findOneAndDelete({ _id: _id });
+      res.status(200).json({result: "successfully deleted", _id: _id});
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'could not delete' });
+    };
   });
 
 module.exports = router;

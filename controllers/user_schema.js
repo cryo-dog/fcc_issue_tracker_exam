@@ -38,4 +38,4 @@ const issuesSchema = new mongoose.Schema({
     "status_text": "In QA"
     */
 
-module.exports = mongoose.model("Issues", issuesSchema);
+module.exports = issuesSchema;
