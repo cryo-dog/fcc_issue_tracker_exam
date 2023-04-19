@@ -38,6 +38,7 @@ router.route('/issues/:project')
       //
       try {
         const issues = await issueModel.find(searchObj);
+        res.json(issues);
       } catch (err) {
         console.error(err);
         res.status(400).json({ message: err.message });
