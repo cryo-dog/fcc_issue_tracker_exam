@@ -47,6 +47,7 @@ app.use("/api/issues/:project", (req, res, next) => {
   next();
 });
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
