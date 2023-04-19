@@ -13,17 +13,26 @@ const issuesSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    "updated_on": Date,
+    "updated_on": {
+        type: Date,
+        default: Date.now
+    },
     "created_by": {
         type: String,
         required: true
     },
-    "assigned_to": String,
+    "assigned_to": {
+        type: String,
+        default: ""
+    },
     "open": {
         type: Boolean,
         default: true
     },
-    "status_text": String
+    "status_text": {
+        type: String,
+        default: ""
+    }
 });
 
 /* Example:

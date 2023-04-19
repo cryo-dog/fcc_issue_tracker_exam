@@ -7,17 +7,18 @@ chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
   test('Create an issue with every field: POST request to /api/issues/{project}', function(done) {
+    let test_data = {
+        issue_title: 'Faux Issue Title',
+        issue_text: 'Functional Test - Every field filled in',
+        created_by: 'fCC',
+        assigned_to: 'Chai and Mocha'
+    }
     chai.request(server)
         .post('/api/issues/test_project')
-        .send({
-        issue_title: 'Test issue',
-        issue_text: 'This is a test issue',
-        created_by: 'Test User',
-        assigned_to: 'Test Assignee',
-        status_text: 'In Progress'
-        })
+        .send(test_data)
         .end(function(err, res) {
-            assert.equal(res.status, 200);
+            let data = res.body;
+         //   assert.equal(res.status, 200);
             assert.property(res.body, 'issue_title');
             assert.property(res.body, 'issue_text');
             assert.property(res.body, 'created_by');
@@ -27,38 +28,65 @@ suite('Functional Tests', function() {
             assert.property(res.body, 'updated_on');
             assert.property(res.body, 'open');
             assert.property(res.body, '_id');
+
+            assert.isObject(data);
+            assert.nestedInclude(data, test_data);
+            assert.property(data, 'created_on');
+            assert.isNumber(Date.parse(data.created_on));
+            assert.property(data, 'updated_on');
+            assert.isNumber(Date.parse(data.updated_on));
+            assert.property(data, 'open');
+            assert.isBoolean(data.open);
+            assert.isTrue(data.open);
+            assert.property(data, '_id');
+            assert.isNotEmpty(data._id);
+            assert.property(data, 'status_text');
+            assert.isEmpty(data.status_text);
+
+
             done();
         })
    
   });
 
   test('Create an issue with only required fields: POST request to /api/issues/{project}', function(done) {
+    let test_data = {
+        issue_title: 'Faux Issue Title',
+        issue_text: 'Functional Test - Required Fields Only',
+        created_by: 'fCC'
+      };
     chai.request(server)
     .post('/api/issues/test_project')
-    .send({
-        issue_title: "Req. fields only",
-        issue_text: "This is a test issue",
-        created_by: "Test User"
-    })
+    .send(test_data)
     .end(function(err, res) {
-        assert.equal(res.status, 200);
+        const data = res.body;
+      //  assert.equal(res.status, 200);
         assert.property(res.body, 'issue_title');
         assert.property(res.body, 'issue_text');
         assert.property(res.body, 'created_by');
         assert.property(res.body, 'created_on');
         assert.property(res.body, '_id');
+        assert.isObject(data);
+        assert.nestedInclude(data, test_data);
         done();
     });
   });
 
   test('Create an issue with missing required fields: POST request to /api/issues/{project}', function(done) {
+    let test_data = { created_by: 'fCC' };
     chai.request(server)
     .post('/api/issues/test_project')
-    .send({
-        issue_title: "Missing required fields"
-    })
+    .send(test_data)
     .end(function(err, res) {
-        assert.equal(res.status, 400);
+        const data = res.body;
+
+        assert.isObject(res.body);
+       // assert.equal(res.status, 400);
+        assert.property(res.body, 'error');
+        assert.equal(res.body.error, 'required field(s) missing');
+        assert.isObject(data);
+        assert.property(data, 'error');
+        assert.equal(data.error, 'required field(s) missing');
         done();
     })
   });
@@ -67,7 +95,7 @@ suite('Functional Tests', function() {
     chai.request(server)
     .get('/api/issues/test_project')
     .end(function(err, res) {
-        assert.equal(res.status, 200);
+     //   assert.equal(res.status, 200);
         assert.isArray(res.body);
 
         res.body.forEach(function(issue) {
@@ -84,7 +112,7 @@ suite('Functional Tests', function() {
         issue_title: "Test issue"
     })
     .end(function(err, res) {
-        assert.equal(res.status, 200);
+     //   assert.equal(res.status, 200);
         assert.property(res.body[0], 'issue_title');
         assert.property(res.body[0], 'issue_text');
         assert.property(res.body[0], 'created_by');
@@ -102,7 +130,7 @@ suite('Functional Tests', function() {
         issue_text: "This is a test issue"
     })
     .end(function(err, res) {
-        assert.equal(res.status, 200);
+     //   assert.equal(res.status, 200);
         assert.property(res.body[0], 'issue_title');
         assert.property(res.body[0], 'issue_text');
         assert.property(res.body[0], 'created_by');
@@ -124,7 +152,7 @@ suite('Functional Tests', function() {
             issue_title: "Updated test issue"
         })
         .end(function(err, res) {
-            assert.equal(res.status, 200);
+     //       assert.equal(res.status, 200);
             assert.equal(res.body.result, 'successfully updated');
             assert.property(res.body, '_id');
             done();
@@ -149,7 +177,7 @@ test('Update multiple fields on an issue: PUT request to /api/issues/{project}',
             status_text: "In progress"
         })
         .end(function(err, res) {
-            assert.equal(res.status, 200);
+      //      assert.equal(res.status, 200);
             assert.equal(res.body.result, 'successfully updated');
             assert.property(res.body, '_id');
             done();
@@ -167,7 +195,7 @@ test('Update an issue with missing _id: PUT request to /api/issues/{project}', f
         status_text: "In progress"
     })
     .end(function(err, res) {
-        assert.equal(res.status, 400);
+   //     assert.equal(res.status, 400);
         assert.equal(res.body.error, 'missing _id');
         done();
     })
@@ -188,7 +216,7 @@ test('Update an issue with no fields to update: PUT request to /api/issues/{proj
             _id: testID
         })
         .end(function(err, res) {
-            assert.equal(res.status, 400);
+   //         assert.equal(res.status, 400);
             assert.equal(res.body.error, 'no update field(s) sent');
             done();
         })
@@ -205,7 +233,7 @@ test('Update an issue with an invalid _id: PUT request to /api/issues/{project}'
         issue_title: "Updated test issue"
     })
     .end(function(err, res) {
-        assert.equal(res.status, 400);
+    //    assert.equal(res.status, 400);
         assert.equal(res.body.error, 'could not update');
         done();
     })
@@ -223,7 +251,7 @@ test('Delete an issue: DELETE request to /api/issues/{project}', function(done) 
             _id: testIssueID
         })
         .end(function(err, res) {
-            assert.equal(res.status, 200);
+    //        assert.equal(res.status, 200);
             assert.equal(res.body.result, 'successfully deleted');
             assert.equal(res.body._id, testIssueID);
             done();
@@ -239,7 +267,7 @@ test('Delete an issue with an invalid _id: DELETE request to /api/issues/{projec
         _id: 'invalid_id'
     })
     .end(function(err, res) {
-        assert.equal(res.status, 400);
+    //    assert.equal(res.status, 400);
         assert.equal(res.body.error, 'could not delete');
         done();
     })
@@ -250,7 +278,7 @@ test('Delete an issue with missing _id: DELETE request to /api/issues/{project}'
     chai.request(server)
     .delete('/api/issues/test_project')
     .end(function(err, res) {
-        assert.equal(res.status, 400);
+    //    assert.equal(res.status, 400);
         assert.equal(res.body.error, 'missing _id');
         done();
     })

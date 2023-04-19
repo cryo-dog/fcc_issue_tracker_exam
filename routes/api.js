@@ -51,31 +51,38 @@ router.route('/issues/:project')
     const issueModel = req.issueModel;
     let { assigned_to, created_by, issue_text, issue_title, status_text, _id, open, updated_on, created_on} = req.body;
 
-    if (!issue_title || !issue_text || !created_by) {
-      res.status(400).json({ error: 'required field(s) missing' });
+    if (!issue_title || !issue_text || !created_by  || _id) {
+      res.json({ error: 'required field(s) missing' });
+      console.log("res:----------");
+      console.log(res.body);
       return;
     }
 
     open != "false" ? open = true : open = false;
 
     // New object with fields only for where there is a value in the object
-    const updateValues = {};
+    const updateValues = {}; /*
     updateValues.assigned_to = (assigned_to) ? assigned_to : '';
     updateValues.created_by = (created_by) ? created_by : '';
     updateValues.issue_text = (issue_text) ? issue_text : '';
     updateValues.issue_title = (issue_title) ? issue_title : '';
     updateValues.status_text = (status_text) ? status_text : '';
-    updateValues.created_on = (created_on) ? created_on : '';    
-    updateValues.updated_on = updated_on ? updated_on : new Date();
-    updateValues.open = open;
+    updateValues.updated_on = updated_on ? updated_on : "";
+    */
+    if (assigned_to) updateValues.assigned_to = assigned_to;
+    if (created_by) updateValues.created_by = created_by;
+    if (issue_text) updateValues.issue_text = issue_text;
+    if (issue_title) updateValues.issue_title = issue_title;
+    if (status_text) updateValues.status_text = status_text;
 
     const newIssue = new issueModel(updateValues);
+    console.log(newIssue);
     try {
       const newIssueResp = await newIssue.save();
       res.status(200).json(newIssueResp);
     } catch (err) {
       console.error(err);
-      res.status(400).json({ message: err.message });
+      res.json({ error: "required field(s) missing" });
     }
     
   })
@@ -102,7 +109,7 @@ router.route('/issues/:project')
     if (status_text) updateValues.status_text = status_text;
 
     if (Object.keys(updateValues).length === 0) {
-          res.status(400).json({ error: 'no update field(s) sent', _id: _id });
+          res.json({ error: 'no update field(s) sent', _id: _id });
           return;
         };
 
@@ -114,7 +121,7 @@ router.route('/issues/:project')
       console.log(updatedEntry);
       res.status(200).json({result: "successfully updated", _id: _id});
     } catch (error) {
-      res.status(400).json({error: "could not update", _id: _id});
+      res.json({error: "could not update", _id: _id});
       console.error("Error updating", error);
     }
   })
