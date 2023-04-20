@@ -109,7 +109,7 @@ suite('Functional Tests', function() {
     chai.request(server)
     .get('/api/issues/test_project')
     .query({
-        issue_title: "Test issue"
+        issue_title: "Faux Issue Title"
     })
     .end(function(err, res) {
      //   assert.equal(res.status, 200);
@@ -126,8 +126,8 @@ suite('Functional Tests', function() {
     chai.request(server)
     .get('/api/issues/test_project')
     .query({
-        issue_title: "Test issue",
-        issue_text: "This is a test issue"
+        issue_title: "Faux Issue Title",
+        created_by: "fCC"
     })
     .end(function(err, res) {
      //   assert.equal(res.status, 200);
@@ -189,14 +189,14 @@ test('Update multiple fields on an issue: PUT request to /api/issues/{project}',
 test('Update an issue with missing _id: PUT request to /api/issues/{project}', function(done) {
     chai.request(server)
     .put('/api/issues/test_project')
-    .send({
-        issue_title: "Updated test issue",
-        issue_text: "This is an updated test issue",
-        status_text: "In progress"
-    })
+    .send()
     .end(function(err, res) {
+        let badUpdate = res.body;
    //     assert.equal(res.status, 400);
         assert.equal(res.body.error, 'missing _id');
+        assert.isObject(badUpdate);
+        assert.property(badUpdate, 'error');
+        assert.equal(badUpdate.error, 'missing _id');
         done();
     })
 });
@@ -218,7 +218,20 @@ test('Update an issue with no fields to update: PUT request to /api/issues/{proj
         .end(function(err, res) {
    //         assert.equal(res.status, 400);
             assert.equal(res.body.error, 'no update field(s) sent');
-            done();
+            assert.equal(res.body._id, testID);
+            
+            let badID = "bad_id";
+            chai.request(server)
+            .put('/api/issues/test_project')
+            .send({
+                _id: badID,
+                issue_title: "bad test issue"
+            })
+            .end(function(err, res) {
+              assert.equal(res.body.error, 'could not update');
+              assert.equal(res.body._id, badID);  
+              done();
+            })
         })
     });
 });
@@ -229,12 +242,13 @@ test('Update an issue with an invalid _id: PUT request to /api/issues/{project}'
     chai.request(server)
     .put('/api/issues/test_project')
     .send({
-        _id: "invalid_id",
+        _id: "5f665eb46e296f6b9b6a50xd",
         issue_title: "Updated test issue"
     })
     .end(function(err, res) {
     //    assert.equal(res.status, 400);
         assert.equal(res.body.error, 'could not update');
+        assert.equal(res.body._id, '5f665eb46e296f6b9b6a50xd');
         done();
     })
 });
@@ -264,7 +278,7 @@ test('Delete an issue with an invalid _id: DELETE request to /api/issues/{projec
     chai.request(server)
     .delete('/api/issues/test_project')
     .send({
-        _id: 'invalid_id'
+        _id: '5f665eb46e296f6b9b6a50xd'
     })
     .end(function(err, res) {
     //    assert.equal(res.status, 400);

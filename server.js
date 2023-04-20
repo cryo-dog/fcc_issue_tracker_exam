@@ -30,16 +30,22 @@ app.use(cors({origin: '*'})); //For FCC testing purposes only
 
 // Middleware function for logging requests
 const requestLogger = (req, res, next) => {
-  console.log("-------------");
+  console.log("---------------------------------------");
   console.log(`Incoming ${req.method} request for ${req.originalUrl}`);
   console.log("Body: ");
+  console.log(req.body);
   console.log(req.query);
-  console.log("-------------");
+  console.log("---------------------------------------");
   next();
 };
 
-// TR: Import new middleware to create a model everytime a request is made
-const issueModel = require('./controllers/modelCreator');
+// TR: Create a model everytime a request is made
+const IssuesSchema = require("./controllers/user_schema");
+const issueModel = function (project) {
+  //
+  const model = mongoose.model(project, IssuesSchema);
+  return model;
+};
 
 app.use("/api/issues/:project", (req, res, next) => {
   const project = req.params.project;

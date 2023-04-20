@@ -3,9 +3,6 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const IssuesSchema = require("../controllers/user_schema");
-
-
 
 router.route('/issues/:project')
   
@@ -19,20 +16,21 @@ router.route('/issues/:project')
     assigned_to ? searchObj.assigned_to = assigned_to : null;
     created_by ? searchObj.created_by = created_by : null;
     issue_text ? searchObj.issue_text = issue_text : null;
-    issue_title ? searchObj.issue_title = issue_title : null;
+    issue_text ? searchObj.issue_text = issue_text : null;
+    _id ? searchObj._id = _id : null;
     status_text ? searchObj.status_text = status_text : null;
     created_on ? searchObj.created_on = created_on : null;
     updated_on ? searchObj.updated_on = updated_on : null;
     open ? searchObj.open = open : null;
 
-    if (!!queryParams) {
+    if (Object.keys(searchObj).length === 0) {
       try {
         //
         const issues = await issueModel.find();
         res.json(issues);
       } catch (err) {
         console.error(err);
-        res.status(400).json({ message: err.message });
+        res.status(200).json({ message: err.message });
       }
     } else {
       //
@@ -41,7 +39,7 @@ router.route('/issues/:project')
         res.json(issues);
       } catch (err) {
         console.error(err);
-        res.status(400).json({ message: err.message });
+        res.status(200).json({ message: err.message });
       }
     };
     
@@ -52,7 +50,7 @@ router.route('/issues/:project')
     const issueModel = req.issueModel;
     let { assigned_to, created_by, issue_text, issue_title, status_text, _id, open, updated_on, created_on} = req.body;
 
-    if (!issue_title || !issue_text || !created_by  || _id) {
+    if (!issue_title || !issue_text || !created_by) {
       res.json({ error: 'required field(s) missing' });
       console.log("res:----------");
       console.log(res.body);
@@ -93,10 +91,16 @@ router.route('/issues/:project')
     let project = req.params.project;
     const issueModel = req.issueModel;
     let { assigned_to, created_by, issue_text, issue_title, status_text, _id, open  } = req.body;
-    open != "false" ? open = true : open = false;
+    console.log("_id is:", _id);
+    console.log(open);
+    if (open == "false") {
+      open = false;
+    } else {
+        open = true;
+      };
 
     if (!_id) {
-          res.status(400).json({ error: 'missing _id' });
+          res.json({ error: 'missing _id' });
           return;
         };
 
@@ -110,20 +114,22 @@ router.route('/issues/:project')
     if (status_text) updateValues.status_text = status_text;
 
     if (Object.keys(updateValues).length === 0) {
-          res.json({ error: 'no update field(s) sent', _id: _id });
+          res.json({ error: "no update field(s) sent", "_id": _id});
+          console.log("_id: ", _id, "error: ", "no update field(s) sent");
           return;
         };
-
+    
+    if (_id) updateValues._id = _id;
     updateValues.updated_on = new Date();
     updateValues.open = open;
 
     try {
-      const updatedEntry = await issueModel.findOneAndUpdate({ _id: _id }, updateValues, { new: true });
+      const updatedEntry = await issueModel.findOneAndUpdate({ "_id": _id }, updateValues, { new: true });
       console.log(updatedEntry);
-      res.status(200).json({result: "successfully updated", _id: _id});
+      res.status(200).json({result: "successfully updated", "_id": _id});
     } catch (error) {
-      res.json({error: "could not update", _id: _id});
-      console.error("Error updating", error);
+      res.json({error: "could not update", "_id": _id});
+      console.error("Error updating, id does not exist or server down");
     }
   })
   
@@ -133,16 +139,16 @@ router.route('/issues/:project')
     const _id = req.body._id;
     
     if (!_id) {
-      res.status(400).json({ error: "missing _id" });
+      res.json({ error: "missing _id" });
       return;
     };
     try {
-      const deletedEntry = await issueModel.findOneAndDelete({ _id: _id });
+      const deletedEntry = await issueModel.findOneAndDelete({ "_id": _id });
       console.log(deletedEntry);
       res.status(200).json({result: "successfully deleted", _id: _id});
     } catch (err) {
-      console.error(err);
-      res.status(400).json({ error: 'could not delete' });
+      console.error("could not delete");
+      res.json({ error: 'could not delete' });
     };
   });
 
