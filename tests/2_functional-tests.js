@@ -220,7 +220,7 @@ test('Update an issue with no fields to update: PUT request to /api/issues/{proj
             assert.equal(res.body.error, 'no update field(s) sent');
             assert.equal(res.body._id, testID);
             
-            let badID = "bad_id";
+            let badID = "6xxx5a67d46fcc054a78349d";
             chai.request(server)
             .put('/api/issues/test_project')
             .send({

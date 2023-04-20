@@ -91,8 +91,12 @@ router.route('/issues/:project')
     let project = req.params.project;
     const issueModel = req.issueModel;
     let { assigned_to, created_by, issue_text, issue_title, status_text, _id, open  } = req.body;
-    console.log("_id is:", _id);
-    console.log(open);
+
+    console.log(`xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    Varaibles are _id: ${_id}, assgined to: ${assigned_to}, created_by: ${created_by}, 
+    issue_text: ${issue_text}, issue_title: ${issue_title}, status_text: ${status_text}, open: ${open}
+    xxxxxxxxxxxxxx`);
+
     if (open == "false") {
       open = false;
     } else {
