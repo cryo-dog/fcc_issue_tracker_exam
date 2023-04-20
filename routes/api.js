@@ -130,7 +130,9 @@ router.route('/issues/:project')
     try {
       const updatedEntry = await issueModel.findOneAndUpdate({ "_id": _id }, updateValues, { new: true });
       console.log(updatedEntry);
-      res.status(200).json({result: "successfully updated", "_id": _id});
+      let newID = updatedEntry._id;
+      console.log(newID);
+      res.status(200).json({result: "successfully updated", "_id": newID});
     } catch (error) {
       res.json({error: "could not update", "_id": _id});
       console.error("Error updating, id does not exist or server down");
@@ -148,11 +150,10 @@ router.route('/issues/:project')
     };
     try {
       const deletedEntry = await issueModel.findOneAndDelete({ "_id": _id });
-      console.log(deletedEntry);
-      res.status(200).json({result: "successfully deleted", _id: _id});
+      res.status(200).json({result: "successfully deleted", _id: deletedEntry._id});
     } catch (err) {
       console.error("could not delete");
-      res.json({ error: 'could not delete' });
+      res.json({ error: "could not delete", "_id": _id });
     };
   });
 
