@@ -81,7 +81,7 @@ router.route('/issues/:project')
       res.status(200).json(newIssueResp);
     } catch (err) {
       console.error(err);
-      res.json({ error: "required field(s) missing" });
+      res.json({ error: "something's not working..." });
     }
     
   })
